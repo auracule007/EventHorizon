@@ -9,7 +9,16 @@ const server = new rpc.Server(RPC_URL);
 async function pollEvents() {
     try {
         const triggers = await Trigger.find({ isActive: true });
-        if (triggers.length === 0) return;
+        
+        if (triggers.length === 0) {
+            logger.debug('No active triggers found for polling');
+            return;
+        }
+
+        logger.info('Starting event polling cycle', { 
+            activeTriggers: triggers.length,
+            rpcUrl: RPC_URL
+        });
 
         for (const trigger of triggers) {
             logger.debug('Polling trigger', {
@@ -22,6 +31,10 @@ async function pollEvents() {
             // In a real scenario, we'd use getEvents with a startLedger
             // and filter by contractId and topics.
         }
+        
+        logger.info('Event polling cycle completed', { 
+            processedTriggers: triggers.length 
+        });
     } catch (error) {
         logger.error('Error in poller', { error: error.message, stack: error.stack });
     }
